@@ -1,0 +1,27 @@
+{
+  "warrantyStatus" : "NO_WARRANTY",
+  "effectiveWarrantyExpiry" : null,
+  "id" : "9432c6e4-f978-450c-91ae-659900cc26cb",
+  "productName" : "Watch",
+  "category" : "Electronics",
+  "purchaseDate" : "2026-08-01",
+  "purchasePrice" : 0.0,
+  "currency" : "USD",
+  "warrantyMonths" : 0,
+  "warrantyExpiryDate" : null,
+  "notes" : "",
+  "attachments" : [ {
+    "url" : false,
+    "fileSizeFormatted" : "56.1 KB",
+    "typeIcon" : "\uD83D\uDCC4",
+    "id" : "a1d76860-4d62-402d-8713-63a0c9186f2c",
+    "displayName" : "Bala_Yokesh_Cover_Letter_Moniepoint.pdf",
+    "type" : "DOCUMENT",
+    "pathOrUrl" : "media/Bala_Yokesh_Cover_Letter_Moniepoint.pdf",
+    "originalFileName" : "Bala_Yokesh_Cover_Letter_Moniepoint.pdf",
+    "fileSize" : 57480,
+    "addedAt" : "2026-08-01"
+  } ],
+  "createdAt" : "2026-08-01",
+  "updatedAt" : "2026-08-01"
+}
