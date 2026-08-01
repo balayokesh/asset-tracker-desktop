@@ -1,0 +1,107 @@
+# =========================
+# IntelliJ IDEA
+# =========================
+.idea/
+*.iml
+*.ipr
+*.iws
+out/
+
+# =========================
+# Maven
+# =========================
+target/
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+pom.xml.next
+release.properties
+dependency-reduced-pom.xml
+buildNumber.properties
+.mvn/timing.properties
+
+# Maven Wrapper (keep the wrapper files)
+!.mvn/wrapper/maven-wrapper.jar
+!.mvn/wrapper/maven-wrapper.properties
+!mvnw
+!mvnw.cmd
+
+# =========================
+# Java
+# =========================
+*.class
+*.jar
+*.war
+*.ear
+*.nar
+hs_err_pid*
+replay_pid*
+
+# =========================
+# Logs
+# =========================
+*.log
+logs/
+
+# =========================
+# OS Files
+# =========================
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# =========================
+# Environment Files
+# =========================
+.env
+.env.*
+!.env.example
+
+# =========================
+# Temporary Files
+# =========================
+*.tmp
+*.temp
+*.swp
+*.swo
+*~
+
+# =========================
+# Test Reports
+# =========================
+surefire-reports/
+failsafe-reports/
+
+# =========================
+# Coverage
+# =========================
+coverage/
+.jacoco/
+jacoco.exec
+
+# =========================
+# VS Code (if occasionally used)
+# =========================
+.vscode/
+
+# =========================
+# Eclipse (if imported)
+# =========================
+.project
+.classpath
+.settings/
+
+# =========================
+# NetBeans
+# =========================
+nbproject/private/
+build/
+dist/
+nbbuild/
+nbdist/
+
+# =========================
+# Generated files
+# =========================
+generated/
+app_data
