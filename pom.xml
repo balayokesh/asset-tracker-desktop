@@ -86,7 +86,7 @@
                 Shade plugin — produces a single fat/uber JAR for distribution.
                 The Main-Class is Launcher (not AssetTrackerApp) to avoid the
                 "JavaFX runtime components are missing" error when launching from
-                a plain fat JAR without --module-path.
+                a plain fat JAR without -module-path.
                 module-info.class is excluded so the shadow jar is not modular.
             -->
             <plugin>

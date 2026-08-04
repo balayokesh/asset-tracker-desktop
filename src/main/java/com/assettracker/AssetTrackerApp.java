@@ -24,7 +24,7 @@ public class AssetTrackerApp extends Application {
                 getClass().getResource("/com/assettracker/styles.css").toExternalForm()
         );
 
-        primaryStage.setTitle("Asset Tracker — Your Products & Warranties");
+        primaryStage.setTitle("Asset Tracker - Your Products & Warranties");
         primaryStage.setScene(scene);
         primaryStage.setMinWidth(900);
         primaryStage.setMinHeight(600);
