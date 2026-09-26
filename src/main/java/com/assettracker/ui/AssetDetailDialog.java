@@ -433,9 +433,11 @@ public class AssetDetailDialog {
         typeIcon.setMinWidth(26);
 
         VBox nameBlock = new VBox(2);
+        nameBlock.setMinWidth(0);
         Label nameLabel = new Label(attachment.getDisplayName());
         nameLabel.getStyleClass().add("attachment-name");
         nameLabel.setWrapText(true);
+        nameLabel.setMinWidth(0);
 
         String subText;
         if (attachment.isUrl()) {
@@ -449,6 +451,7 @@ public class AssetDetailDialog {
         Label subLabel = new Label(subText);
         subLabel.getStyleClass().add("attachment-sub");
         subLabel.setWrapText(true);
+        subLabel.setMinWidth(0);
         nameBlock.getChildren().addAll(nameLabel, subLabel);
 
         // FIX: check file existence properly; URLs always "exist"
@@ -460,12 +463,11 @@ public class AssetDetailDialog {
         }
         HBox.setHgrow(nameBlock, Priority.ALWAYS);
 
-        Region spacer = new Region();
-        HBox.setHgrow(spacer, Priority.ALWAYS);
-
         Button openBtn = new Button("Open");
         openBtn.getStyleClass().add("btn-table-view");
+        openBtn.setMinWidth(Region.USE_PREF_SIZE);
         openBtn.setDisable(!exists);
+        openBtn.setTooltip(new Tooltip(attachment.isUrl() ? "Open link in browser" : "Open file"));
         openBtn.setOnAction(e -> {
             try {
                 ctx.getFileManager().openAttachment(attachment);
@@ -476,6 +478,8 @@ public class AssetDetailDialog {
 
         Button removeBtn = new Button("Remove");
         removeBtn.getStyleClass().add("btn-table-delete");
+        removeBtn.setMinWidth(Region.USE_PREF_SIZE);
+        removeBtn.setTooltip(new Tooltip(attachment.isUrl() ? "Remove link" : "Remove file"));
         removeBtn.setOnAction(e -> removeAttachment(attachment));
 
         row.getChildren().addAll(typeIcon, nameBlock, openBtn, removeBtn);
