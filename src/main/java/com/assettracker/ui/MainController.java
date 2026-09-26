@@ -77,6 +77,8 @@ public class MainController {
         logo.getStyleClass().add("header-logo");
 
         VBox titleBlock = new VBox(2);
+        titleBlock.getStyleClass().add("header-title-block");
+        titleBlock.setAlignment(Pos.CENTER_LEFT);
         Label title = new Label("Asset Tracker");
         title.getStyleClass().add("header-title");
         Label subtitle = new Label("Manage products, warranties & documents");
