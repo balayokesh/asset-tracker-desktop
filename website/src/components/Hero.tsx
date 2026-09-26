@@ -6,6 +6,7 @@ import Chip from '@mui/material/Chip';
 import ArrowDownwardRoundedIcon from '@mui/icons-material/ArrowDownwardRounded';
 import DownloadRoundedIcon from '@mui/icons-material/DownloadRounded';
 import { GlowButton, GradientText } from './styled';
+import preview1 from '../assets/preview1.png';
 
 export default function Hero() {
   return (
@@ -127,7 +128,7 @@ export default function Hero() {
             {/* Preview */}
             <Box
               component="img"
-              src="/dashboard-preview.webp"
+              src={preview1}
               alt="Asset Tracker Dashboard Preview"
               sx={{ width: '100%', display: 'block', objectFit: 'cover' }}
               loading="lazy"
