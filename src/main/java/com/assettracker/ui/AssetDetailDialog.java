@@ -6,11 +6,16 @@ import com.assettracker.service.AppContext;
 import javafx.animation.PauseTransition;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
+import javafx.scene.Cursor;
+import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.input.Clipboard;
 import javafx.scene.input.ClipboardContent;
 import javafx.scene.layout.*;
+import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Text;
 import javafx.scene.text.TextFlow;
 import javafx.stage.FileChooser;
@@ -22,6 +27,8 @@ import javafx.util.Duration;
 import java.awt.Desktop;
 import java.io.File;
 import java.net.URI;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
@@ -423,9 +430,10 @@ public class AssetDetailDialog {
         row.setAlignment(Pos.CENTER_LEFT);
         row.setPadding(new Insets(8, 12, 8, 12));
 
-        Label typeIcon = new Label(attachment.getTypeIcon());
-        typeIcon.getStyleClass().add("attachment-icon");
-        typeIcon.setMinWidth(26);
+        // FIX: check file existence properly; URLs always "exist"
+        boolean exists = ctx.getFileManager().attachmentFileExists(attachment);
+
+        Node leadingNode = buildAttachmentLeadingNode(attachment, exists);
 
         VBox nameBlock = new VBox(2);
         nameBlock.setMinWidth(0);
@@ -450,8 +458,6 @@ public class AssetDetailDialog {
         subLabel.setMinWidth(0);
         nameBlock.getChildren().addAll(nameLabel, subLabel);
 
-        // FIX: check file existence properly; URLs always "exist"
-        boolean exists = ctx.getFileManager().attachmentFileExists(attachment);
         if (!exists) {
             Label missingLbl = new Label("⚠ File not found on disk");
             missingLbl.getStyleClass().add("attachment-missing");
@@ -478,8 +484,72 @@ public class AssetDetailDialog {
         removeBtn.setTooltip(new Tooltip(attachment.isUrl() ? "Remove link" : "Remove file"));
         removeBtn.setOnAction(e -> removeAttachment(attachment));
 
-        row.getChildren().addAll(typeIcon, nameBlock, openBtn, removeBtn);
+        row.getChildren().addAll(leadingNode, nameBlock, openBtn, removeBtn);
         return row;
+    }
+
+    private Node buildAttachmentLeadingNode(Attachment attachment, boolean exists) {
+        if (attachment.getType() == Attachment.AttachmentType.IMAGE && exists) {
+            String imageUri = null;
+            if (!attachment.isUrl()) {
+                Path absPath = ctx.getFileManager().resolveAbsolute(attachment.getPathOrUrl());
+                if (Files.exists(absPath)) {
+                    imageUri = absPath.toUri().toString();
+                }
+            } else {
+                imageUri = attachment.getPathOrUrl();
+            }
+
+            if (imageUri != null) {
+                try {
+                    // Load thumbnail asynchronously and smoothly
+                    Image img = new Image(imageUri, 76, 76, true, true, true);
+                    ImageView imageView = new ImageView(img);
+                    imageView.setFitWidth(38);
+                    imageView.setFitHeight(38);
+                    imageView.setPreserveRatio(true);
+                    imageView.setSmooth(true);
+
+                    Rectangle clip = new Rectangle(38, 38);
+                    clip.setArcWidth(8);
+                    clip.setArcHeight(8);
+                    imageView.setClip(clip);
+
+                    StackPane previewBox = new StackPane(imageView);
+                    previewBox.getStyleClass().add("attachment-preview-box");
+                    previewBox.setMinSize(38, 38);
+                    previewBox.setPrefSize(38, 38);
+                    previewBox.setMaxSize(38, 38);
+                    previewBox.setAlignment(Pos.CENTER);
+                    previewBox.setCursor(Cursor.HAND);
+                    previewBox.setOnMouseClicked(e -> {
+                        try {
+                            ctx.getFileManager().openAttachment(attachment);
+                        } catch (RuntimeException ex) {
+                            showError("Could not Open", ex.getMessage());
+                        }
+                    });
+                    Tooltip.install(previewBox, new Tooltip("Click to open image"));
+
+                    Label fallbackIcon = new Label(attachment.getTypeIcon());
+                    fallbackIcon.getStyleClass().add("attachment-icon");
+                    img.errorProperty().addListener((obs, oldVal, isErr) -> {
+                        if (Boolean.TRUE.equals(isErr)) {
+                            previewBox.getChildren().setAll(fallbackIcon);
+                        }
+                    });
+
+                    return previewBox;
+                } catch (Exception ignored) {
+                    // Fallback to standard icon below
+                }
+            }
+        }
+
+        Label typeIcon = new Label(attachment.getTypeIcon());
+        typeIcon.getStyleClass().add("attachment-icon");
+        typeIcon.setMinWidth(26);
+        return typeIcon;
     }
 
     // ── Attachment Actions ────────────────────────────────────────────────────
