@@ -11,43 +11,40 @@ import javafx.stage.Window;
 import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Optional;
 
 /**
  * Modal dialog for creating a new asset or editing an existing one.
  * Returns the modified/new Asset via showAndWait().
  *
  * FIXES APPLIED:
- *  - setupButtons() now stores the ButtonType and looks up the OK button
- *    after getDialogPane().getButtonTypes().addAll() has been called, which
- *    guarantees lookupButton() returns non-null (was NPE on some JFX builds).
- *  - Added explicit ActionEvent import instead of fully-qualified reference.
- *  - Warranty toggle radio listener correctly enables/disables both fields.
- *  - convertResult() safely handles empty warrantyMonths text.
+ * - setupButtons() now stores the ButtonType and looks up the OK button
+ * after getDialogPane().getButtonTypes().addAll() has been called, which
+ * guarantees lookupButton() returns non-null (was NPE on some JFX builds).
+ * - Added explicit ActionEvent import instead of fully-qualified reference.
+ * - Warranty toggle radio listener correctly enables/disables both fields.
+ * - convertResult() safely handles empty warrantyMonths text.
  */
 public class AssetFormDialog extends Dialog<Asset> {
 
     private static final List<String> PREDEFINED_CATEGORIES = Arrays.asList(
             "Electronics", "Kitchen", "Appliances", "Apparel", "Furniture",
             "Automotive", "Tools", "Sports & Fitness", "Books & Media",
-            "Health & Beauty", "Garden", "Toys & Games", "Office", "Other"
-    );
+            "Health & Beauty", "Garden", "Toys & Games", "Office", "Other");
 
     private static final List<String> CURRENCIES = Arrays.asList(
-            "USD", "EUR", "GBP", "CAD", "AUD", "JPY", "CHF", "INR", "CNY"
-    );
+            "INR", "EUR", "GBP", "CAD", "AUD", "JPY", "CHF", "USD", "CNY");
 
     // Form fields
-    private TextField         nameField;
-    private ComboBox<String>  categoryBox;
-    private DatePicker        purchaseDatePicker;
-    private TextField         priceField;
-    private ComboBox<String>  currencyBox;
-    private TextField         warrantyMonthsField;
-    private DatePicker        warrantyExpiryPicker;
-    private TextArea          notesArea;
-    private RadioButton       useMonthsRadio;
-    private RadioButton       useExpiryRadio;
+    private TextField nameField;
+    private ComboBox<String> categoryBox;
+    private DatePicker purchaseDatePicker;
+    private TextField priceField;
+    private ComboBox<String> currencyBox;
+    private TextField warrantyMonthsField;
+    private DatePicker warrantyExpiryPicker;
+    private TextArea notesArea;
+    private RadioButton useMonthsRadio;
+    private RadioButton useExpiryRadio;
 
     // FIX: store ButtonType so setupButtons() can look it up safely
     private ButtonType saveBtnType;
@@ -62,12 +59,11 @@ public class AssetFormDialog extends Dialog<Asset> {
         setResizable(true);
 
         getDialogPane().getStylesheets().add(
-                getClass().getResource("/com/assettracker/styles.css").toExternalForm()
-        );
+                getClass().getResource("/com/assettracker/styles.css").toExternalForm());
         getDialogPane().getStyleClass().add("form-dialog");
 
         buildContent();
-        setupButtons();       // must come AFTER buildContent() so fields exist
+        setupButtons(); // must come AFTER buildContent() so fields exist
 
         if (existingAsset != null) {
             populateFields(existingAsset);
@@ -133,8 +129,9 @@ public class AssetFormDialog extends Dialog<Asset> {
         useExpiryRadio = new RadioButton("Specific expiry date:");
         useExpiryRadio.setToggleGroup(warrantyToggle);
 
-        warrantyMonthsField  = new TextField("0");
+        warrantyMonthsField = new TextField("0");
         warrantyMonthsField.setPrefWidth(70);
+        warrantyMonthsField.getStyleClass().add("form-field");
         warrantyExpiryPicker = new DatePicker();
         warrantyExpiryPicker.setDisable(true);
 
@@ -146,8 +143,9 @@ public class AssetFormDialog extends Dialog<Asset> {
         });
 
         VBox warrantyBox = new VBox(6);
-        HBox monthsRow = new HBox(8, useMonthsRadio, warrantyMonthsField,
-                new Label("months  (0 = no warranty)"));
+        Label monthsHint = new Label("months (0 = no warranty)");
+        monthsHint.getStyleClass().add("form-hint");
+        HBox monthsRow = new HBox(8, useMonthsRadio, warrantyMonthsField, monthsHint);
         monthsRow.setAlignment(Pos.CENTER_LEFT);
         HBox expiryRow = new HBox(8, useExpiryRadio, warrantyExpiryPicker);
         expiryRow.setAlignment(Pos.CENTER_LEFT);
@@ -196,7 +194,8 @@ public class AssetFormDialog extends Dialog<Asset> {
         Button okButton = (Button) getDialogPane().lookupButton(saveBtnType);
         if (okButton != null) {
             okButton.addEventFilter(ActionEvent.ACTION, e -> {
-                if (!validateForm()) e.consume();
+                if (!validateForm())
+                    e.consume();
             });
         }
     }
@@ -215,7 +214,8 @@ public class AssetFormDialog extends Dialog<Asset> {
         }
         try {
             double price = Double.parseDouble(priceField.getText().trim().replace(",", "."));
-            if (price < 0) throw new NumberFormatException("negative");
+            if (price < 0)
+                throw new NumberFormatException("negative");
         } catch (NumberFormatException e) {
             showValidationError("Purchase Price must be a valid non-negative number.");
             priceField.requestFocus();
@@ -225,7 +225,8 @@ public class AssetFormDialog extends Dialog<Asset> {
             String monthsText = warrantyMonthsField.getText().trim();
             try {
                 int months = monthsText.isEmpty() ? 0 : Integer.parseInt(monthsText);
-                if (months < 0) throw new NumberFormatException("negative");
+                if (months < 0)
+                    throw new NumberFormatException("negative");
             } catch (NumberFormatException e) {
                 showValidationError("Warranty months must be a non-negative whole number.");
                 warrantyMonthsField.requestFocus();
@@ -250,7 +251,8 @@ public class AssetFormDialog extends Dialog<Asset> {
         if (asset.getPurchaseDate() != null)
             purchaseDatePicker.setValue(asset.getPurchaseDate());
         priceField.setText(String.format("%.2f", asset.getPurchasePrice()));
-        if (asset.getCurrency() != null) currencyBox.setValue(asset.getCurrency());
+        if (asset.getCurrency() != null)
+            currencyBox.setValue(asset.getCurrency());
 
         if (asset.getWarrantyExpiryDate() != null) {
             useExpiryRadio.setSelected(true);
@@ -264,7 +266,8 @@ public class AssetFormDialog extends Dialog<Asset> {
             warrantyExpiryPicker.setDisable(true);
         }
 
-        if (asset.getNotes() != null) notesArea.setText(asset.getNotes());
+        if (asset.getNotes() != null)
+            notesArea.setText(asset.getNotes());
     }
 
     private Asset convertResult(ButtonType buttonType) {
@@ -277,7 +280,8 @@ public class AssetFormDialog extends Dialog<Asset> {
 
         // FIX: for editable ComboBox, read from editor text if getValue() is null
         String cat = categoryBox.getValue();
-        if (cat == null || cat.isBlank()) cat = categoryBox.getEditor().getText();
+        if (cat == null || cat.isBlank())
+            cat = categoryBox.getEditor().getText();
         asset.setCategory(cat != null ? cat.trim() : "");
 
         asset.setPurchaseDate(purchaseDatePicker.getValue());
@@ -308,8 +312,8 @@ public class AssetFormDialog extends Dialog<Asset> {
         return lbl;
     }
 
-//    @Override
-//    public Optional<Asset> showAndWait() {
-//        return super.showAndWait();
-//    }
+    // @Override
+    // public Optional<Asset> showAndWait() {
+    // return super.showAndWait();
+    // }
 }

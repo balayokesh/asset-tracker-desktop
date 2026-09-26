@@ -12,10 +12,45 @@
 
 .root {
     -fx-background-color: #F0F2F5;
+    -fx-base: #F0F2F5;
+    -fx-background: #F0F2F5;
 }
 
 .root-pane {
     -fx-background-color: #F0F2F5;
+}
+
+.label {
+    -fx-text-fill: #374151;
+}
+
+.radio-button {
+    -fx-text-fill: #374151;
+    -fx-font-size: 12.5px;
+}
+
+.radio-button .text {
+    -fx-fill: #374151;
+}
+
+.radio-button:selected {
+    -fx-text-fill: #1F2937;
+}
+
+.radio-button:selected .text {
+    -fx-fill: #1F2937;
+}
+
+.radio-button:disabled {
+    -fx-opacity: 0.6;
+}
+
+.check-box {
+    -fx-text-fill: #374151;
+}
+
+.check-box .text {
+    -fx-fill: #374151;
 }
 
 /* ── Header ──────────────────────────────────────────────────── */
@@ -346,6 +381,13 @@
 
 .form-dialog {
     -fx-background-color: #FFFFFF;
+    -fx-base: #FFFFFF;
+    -fx-background: #FFFFFF;
+}
+
+.form-hint {
+    -fx-text-fill: #6B7280;
+    -fx-font-size: 11.5px;
 }
 
 .form-label {
@@ -513,6 +555,8 @@
 
 .dialog-pane {
     -fx-background-color: #FFFFFF;
+    -fx-base: #FFFFFF;
+    -fx-background: #FFFFFF;
 }
 
 .dialog-pane>.button-bar>.container {
