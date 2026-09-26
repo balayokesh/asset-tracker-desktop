@@ -34,28 +34,28 @@ import java.util.regex.Pattern;
  * Shows full asset metadata and all attachments with open/delete/add actions.
  *
  * FIXES APPLIED:
- *  - Removed unused import java.nio.file.Path.
- *  - buildNotesSection() now always returns a VBox (not calling children.addAll
- *    on the root with a null-returning conditional).
- *  - Attachment "Open" button now enabled for URLs unconditionally.
- *  - GridPane column constraints added to info grids so values don't overlap.
- *  - showError() safely handles null messages.
+ * - Removed unused import java.nio.file.Path.
+ * - buildNotesSection() now always returns a VBox (not calling children.addAll
+ * on the root with a null-returning conditional).
+ * - Attachment "Open" button now enabled for URLs unconditionally.
+ * - GridPane column constraints added to info grids so values don't overlap.
+ * - showError() safely handles null messages.
  */
 public class AssetDetailDialog {
 
     private static final DateTimeFormatter DATE_FMT = DateTimeFormatter.ofPattern("MMM dd, yyyy");
 
-    private final Asset    asset;
-    private final Window   owner;
+    private final Asset asset;
+    private final Window owner;
     private final Runnable onClose;
     private final AppContext ctx = AppContext.getInstance();
 
     private Stage stage;
-    private VBox  attachmentsBox;
+    private VBox attachmentsBox;
 
     public AssetDetailDialog(Asset asset, Window owner, Runnable onClose) {
-        this.asset   = asset;
-        this.owner   = owner;
+        this.asset = asset;
+        this.owner = owner;
         this.onClose = onClose;
     }
 
@@ -74,10 +74,12 @@ public class AssetDetailDialog {
 
         Scene scene = new Scene(scroll, 720, 640);
         scene.getStylesheets().add(
-                getClass().getResource("/com/assettracker/styles.css").toExternalForm()
-        );
+                getClass().getResource("/com/assettracker/styles.css").toExternalForm());
         stage.setScene(scene);
-        stage.setOnHidden(e -> { if (onClose != null) onClose.run(); });
+        stage.setOnHidden(e -> {
+            if (onClose != null)
+                onClose.run();
+        });
         stage.show();
     }
 
@@ -90,16 +92,14 @@ public class AssetDetailDialog {
         root.getChildren().addAll(
                 buildDetailHeader(),
                 buildInfoSection(),
-                buildWarrantySection()
-        );
+                buildWarrantySection());
         // Only add notes section if it has content
         if (!notesSection.getChildren().isEmpty()) {
             root.getChildren().add(notesSection);
         }
         root.getChildren().addAll(
                 buildAttachmentsSection(),
-                buildBottomBar()
-        );
+                buildBottomBar());
         return root;
     }
 
@@ -179,11 +179,6 @@ public class AssetDetailDialog {
                 "Purchase Price",
                 asset.getCurrency() + " " + String.format("%.2f", asset.getPurchasePrice()),
                 0);
-        addInfoRow(grid, "Category",
-                asset.getCategory() != null ? asset.getCategory() : "—",
-                "Asset ID",
-                asset.getId().length() > 8 ? asset.getId().substring(0, 8) + "…" : asset.getId(),
-                1);
 
         section.getChildren().addAll(header, grid);
         return section;
@@ -230,8 +225,7 @@ public class AssetDetailDialog {
 
     private static final Pattern URL_PATTERN = Pattern.compile(
             "(https?://\\S+|www\\.\\S+)",
-            Pattern.CASE_INSENSITIVE
-    );
+            Pattern.CASE_INSENSITIVE);
 
     private VBox buildNotesSection() {
         VBox section = new VBox(8);
@@ -359,7 +353,7 @@ public class AssetDetailDialog {
             if (Desktop.isDesktopSupported() && Desktop.getDesktop().isSupported(Desktop.Action.BROWSE)) {
                 Desktop.getDesktop().browse(new URI(url));
             } else {
-                Runtime.getRuntime().exec(new String[]{"rundll32", "url.dll,FileProtocolHandler", url});
+                Runtime.getRuntime().exec(new String[] { "rundll32", "url.dll,FileProtocolHandler", url });
             }
         } catch (Exception ex) {
             showError("Could not Open Link", "Failed to open link: " + url + "\n" + ex.getMessage());
@@ -367,7 +361,8 @@ public class AssetDetailDialog {
     }
 
     private void copyToClipboard(String text) {
-        if (text == null) return;
+        if (text == null)
+            return;
         ClipboardContent content = new ClipboardContent();
         content.putString(text);
         Clipboard.getSystemClipboard().setContent(content);
@@ -445,7 +440,8 @@ public class AssetDetailDialog {
         } else {
             String size = attachment.getFileSizeFormatted();
             String date = attachment.getAddedAt() != null
-                    ? "Added " + attachment.getAddedAt().format(DATE_FMT) : "";
+                    ? "Added " + attachment.getAddedAt().format(DATE_FMT)
+                    : "";
             subText = (size.isEmpty() ? "" : size + "  ·  ") + date;
         }
         Label subLabel = new Label(subText);
@@ -493,17 +489,17 @@ public class AssetDetailDialog {
         chooser.setTitle("Select File(s) to Attach");
         chooser.getExtensionFilters().addAll(
                 new FileChooser.ExtensionFilter("All Supported",
-                        "*.pdf","*.txt","*.docx","*.doc",
-                        "*.png","*.jpg","*.jpeg","*.gif","*.bmp",
-                        "*.mp3","*.wav","*.mp4","*.mkv","*.avi","*.mov"),
-                new FileChooser.ExtensionFilter("Documents",   "*.pdf","*.txt","*.docx","*.doc"),
-                new FileChooser.ExtensionFilter("Images",      "*.png","*.jpg","*.jpeg","*.gif","*.bmp"),
-                new FileChooser.ExtensionFilter("Audio/Video", "*.mp3","*.wav","*.mp4","*.mkv","*.avi","*.mov"),
-                new FileChooser.ExtensionFilter("All Files",   "*.*")
-        );
+                        "*.pdf", "*.txt", "*.docx", "*.doc",
+                        "*.png", "*.jpg", "*.jpeg", "*.gif", "*.bmp",
+                        "*.mp3", "*.wav", "*.mp4", "*.mkv", "*.avi", "*.mov"),
+                new FileChooser.ExtensionFilter("Documents", "*.pdf", "*.txt", "*.docx", "*.doc"),
+                new FileChooser.ExtensionFilter("Images", "*.png", "*.jpg", "*.jpeg", "*.gif", "*.bmp"),
+                new FileChooser.ExtensionFilter("Audio/Video", "*.mp3", "*.wav", "*.mp4", "*.mkv", "*.avi", "*.mov"),
+                new FileChooser.ExtensionFilter("All Files", "*.*"));
 
         List<File> files = chooser.showOpenMultipleDialog(stage);
-        if (files == null || files.isEmpty()) return;
+        if (files == null || files.isEmpty())
+            return;
 
         int added = 0;
         StringBuilder errors = new StringBuilder();
@@ -553,10 +549,10 @@ public class AssetDetailDialog {
         urlField.setPrefWidth(300);
         GridPane.setHgrow(urlField, Priority.ALWAYS);
 
-        grid.add(lblLabel,    0, 0);
+        grid.add(lblLabel, 0, 0);
         grid.add(displayField, 1, 0);
         grid.add(urlLblLabel, 0, 1);
-        grid.add(urlField,    1, 1);
+        grid.add(urlField, 1, 1);
 
         ColumnConstraints c0 = new ColumnConstraints(60);
         ColumnConstraints c1 = new ColumnConstraints();
@@ -582,10 +578,12 @@ public class AssetDetailDialog {
         }
 
         urlDialog.setResultConverter(btn -> {
-            if (btn != ButtonType.OK) return null;
+            if (btn != ButtonType.OK)
+                return null;
             String label = displayField.getText().trim();
-            String url   = urlField.getText().trim();
-            if (label.isEmpty()) label = url;
+            String url = urlField.getText().trim();
+            if (label.isEmpty())
+                label = url;
             return Attachment.forUrl(label, url);
         });
 
@@ -635,16 +633,16 @@ public class AssetDetailDialog {
         grid.setVgap(8);
 
         ColumnConstraints label1 = new ColumnConstraints(120);
-        ColumnConstraints val1   = new ColumnConstraints(160);
+        ColumnConstraints val1 = new ColumnConstraints(160);
         ColumnConstraints label2 = new ColumnConstraints(120);
-        ColumnConstraints val2   = new ColumnConstraints();
+        ColumnConstraints val2 = new ColumnConstraints();
         val2.setHgrow(Priority.ALWAYS);
         grid.getColumnConstraints().addAll(label1, val1, label2, val2);
         return grid;
     }
 
     private void addInfoRow(GridPane grid, String lbl1, String val1,
-                             String lbl2, String val2, int row) {
+            String lbl2, String val2, int row) {
         Label l1 = new Label(lbl1);
         l1.getStyleClass().add("info-label");
         Label v1 = new Label(val1 != null ? val1 : "—");
