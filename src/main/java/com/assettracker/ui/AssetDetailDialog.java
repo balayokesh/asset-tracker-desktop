@@ -3,21 +3,31 @@ package com.assettracker.ui;
 import com.assettracker.model.Asset;
 import com.assettracker.model.Attachment;
 import com.assettracker.service.AppContext;
+import javafx.animation.PauseTransition;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
+import javafx.scene.input.Clipboard;
+import javafx.scene.input.ClipboardContent;
 import javafx.scene.layout.*;
+import javafx.scene.text.Text;
+import javafx.scene.text.TextFlow;
 import javafx.stage.FileChooser;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.Window;
+import javafx.util.Duration;
 
+import java.awt.Desktop;
 import java.io.File;
+import java.net.URI;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Detail/view stage for a single asset.
@@ -218,8 +228,11 @@ public class AssetDetailDialog {
 
     // ── Notes Section ─────────────────────────────────────────────────────────
 
-    // FIX: always return a VBox — let caller decide whether to add it based on
-    // whether children is non-empty, rather than conditional return types.
+    private static final Pattern URL_PATTERN = Pattern.compile(
+            "(https?://\\S+|www\\.\\S+)",
+            Pattern.CASE_INSENSITIVE
+    );
+
     private VBox buildNotesSection() {
         VBox section = new VBox(8);
         if (asset.getNotes() == null || asset.getNotes().isBlank()) {
@@ -228,15 +241,136 @@ public class AssetDetailDialog {
         section.getStyleClass().add("detail-section");
         section.setPadding(new Insets(8, 24, 16, 24));
 
+        HBox headerRow = new HBox(12);
+        headerRow.setAlignment(Pos.CENTER_LEFT);
+
         Label header = new Label("Notes");
         header.getStyleClass().add("section-header");
+        HBox.setHgrow(header, Priority.ALWAYS);
 
-        Label notes = new Label(asset.getNotes());
-        notes.getStyleClass().add("notes-text");
-        notes.setWrapText(true);
+        Region spacer = new Region();
+        HBox.setHgrow(spacer, Priority.ALWAYS);
 
-        section.getChildren().addAll(header, notes);
+        Button copyBtn = new Button("📋 Copy Notes");
+        copyBtn.getStyleClass().add("btn-ghost");
+        copyBtn.setOnAction(e -> {
+            copyToClipboard(asset.getNotes());
+            copyBtn.setText("✓ Copied!");
+            PauseTransition pause = new PauseTransition(Duration.seconds(2));
+            pause.setOnFinished(ev -> copyBtn.setText("📋 Copy Notes"));
+            pause.play();
+        });
+
+        headerRow.getChildren().addAll(header, spacer, copyBtn);
+
+        TextFlow notesFlow = buildNotesTextFlow(asset.getNotes());
+
+        section.getChildren().addAll(headerRow, notesFlow);
         return section;
+    }
+
+    private TextFlow buildNotesTextFlow(String notesText) {
+        TextFlow flow = new TextFlow();
+        flow.getStyleClass().add("notes-flow");
+
+        ContextMenu flowMenu = new ContextMenu();
+        MenuItem copyNotesItem = new MenuItem("Copy All Notes");
+        copyNotesItem.setOnAction(e -> copyToClipboard(notesText));
+        flowMenu.getItems().add(copyNotesItem);
+        flow.setOnContextMenuRequested(e -> {
+            flowMenu.show(flow, e.getScreenX(), e.getScreenY());
+            e.consume();
+        });
+
+        Matcher matcher = URL_PATTERN.matcher(notesText);
+        int lastEnd = 0;
+
+        while (matcher.find()) {
+            int start = matcher.start();
+            int end = matcher.end();
+
+            // Text before the URL
+            if (start > lastEnd) {
+                Text textBefore = new Text(notesText.substring(lastEnd, start));
+                textBefore.getStyleClass().add("notes-text");
+                flow.getChildren().add(textBefore);
+            }
+
+            String rawMatch = notesText.substring(start, end);
+            String url = rawMatch;
+            String trailing = "";
+
+            while (url.length() > 0 && ".,!?:;\"')>]".indexOf(url.charAt(url.length() - 1)) != -1) {
+                if (url.charAt(url.length() - 1) == ')') {
+                    long openCount = url.chars().filter(ch -> ch == '(').count();
+                    long closeCount = url.chars().filter(ch -> ch == ')').count();
+                    if (openCount == closeCount) {
+                        break;
+                    }
+                }
+                trailing = url.charAt(url.length() - 1) + trailing;
+                url = url.substring(0, url.length() - 1);
+            }
+
+            if (!url.isEmpty()) {
+                final String finalUrl = url.startsWith("www.") ? "https://" + url : url;
+                Hyperlink link = new Hyperlink(url);
+                link.getStyleClass().add("notes-link");
+                link.setWrapText(true);
+                link.setTooltip(new Tooltip(finalUrl));
+                link.setOnAction(e -> openWebUrl(finalUrl));
+
+                ContextMenu linkMenu = new ContextMenu();
+                MenuItem openItem = new MenuItem("Open in Browser");
+                openItem.setOnAction(e -> openWebUrl(finalUrl));
+
+                MenuItem copyLinkItem = new MenuItem("Copy Link URL");
+                copyLinkItem.setOnAction(e -> copyToClipboard(finalUrl));
+
+                MenuItem copyAllItem = new MenuItem("Copy All Notes");
+                copyAllItem.setOnAction(e -> copyToClipboard(notesText));
+
+                linkMenu.getItems().addAll(openItem, copyLinkItem, new SeparatorMenuItem(), copyAllItem);
+                link.setContextMenu(linkMenu);
+
+                flow.getChildren().add(link);
+            }
+
+            if (!trailing.isEmpty()) {
+                Text trailText = new Text(trailing);
+                trailText.getStyleClass().add("notes-text");
+                flow.getChildren().add(trailText);
+            }
+
+            lastEnd = end;
+        }
+
+        if (lastEnd < notesText.length()) {
+            Text restText = new Text(notesText.substring(lastEnd));
+            restText.getStyleClass().add("notes-text");
+            flow.getChildren().add(restText);
+        }
+
+        return flow;
+    }
+
+    private void openWebUrl(String url) {
+        try {
+            if (Desktop.isDesktopSupported() && Desktop.getDesktop().isSupported(Desktop.Action.BROWSE)) {
+                Desktop.getDesktop().browse(new URI(url));
+            } else {
+                Runtime.getRuntime().exec(new String[]{"rundll32", "url.dll,FileProtocolHandler", url});
+            }
+        } catch (Exception ex) {
+            showError("Could not Open Link", "Failed to open link: " + url + "\n" + ex.getMessage());
+        }
+    }
+
+    private void copyToClipboard(String text) {
+        if (text == null) return;
+        ClipboardContent content = new ClipboardContent();
+        content.putString(text);
+        Clipboard.getSystemClipboard().setContent(content);
     }
 
     // ── Attachments Section ───────────────────────────────────────────────────

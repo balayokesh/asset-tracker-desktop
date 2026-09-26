@@ -497,9 +497,35 @@
     -fx-font-weight: 600;
 }
 
+.notes-flow {
+    -fx-line-spacing: 4px;
+}
+
 .notes-text {
-    -fx-text-fill: #4B5563;
+    -fx-fill: #374151;
+    -fx-text-fill: #374151;
     -fx-font-size: 13px;
+    -fx-font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+}
+
+.notes-link {
+    -fx-text-fill: #2563EB;
+    -fx-underline: true;
+    -fx-font-size: 13px;
+    -fx-font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+    -fx-padding: 0;
+    -fx-border-width: 0;
+    -fx-background-color: transparent;
+    -fx-cursor: hand;
+}
+
+.notes-link:hover {
+    -fx-text-fill: #1D4ED8;
+    -fx-underline: true;
+}
+
+.notes-link:visited {
+    -fx-text-fill: #2563EB;
 }
 
 /* ── Attachment Rows ─────────────────────────────────────────── */

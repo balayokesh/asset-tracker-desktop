@@ -114,7 +114,7 @@ public class AssetFormDialog extends Dialog<Asset> {
         priceField.getStyleClass().add("form-field");
         currencyBox = new ComboBox<>();
         currencyBox.getItems().addAll(CURRENCIES);
-        currencyBox.setValue("USD");
+        currencyBox.setValue("INR");
         currencyBox.setPrefWidth(90);
         priceBox.getChildren().addAll(priceField, currencyBox);
         grid.add(priceBox, 1, row++);
@@ -289,7 +289,7 @@ public class AssetFormDialog extends Dialog<Asset> {
         String priceText = priceField.getText().trim().replace(",", ".");
         asset.setPurchasePrice(priceText.isEmpty() ? 0.0 : Double.parseDouble(priceText));
 
-        asset.setCurrency(currencyBox.getValue() != null ? currencyBox.getValue() : "USD");
+        asset.setCurrency(currencyBox.getValue() != null ? currencyBox.getValue() : "INR");
         asset.setNotes(notesArea.getText().trim());
 
         if (useExpiryRadio.isSelected()) {
